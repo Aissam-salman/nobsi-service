@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id Int @id @default(autoincrement())
+  user_name String @unique
+  user_email String  @unique
+  user_passwordHash String
+  workspace Workspace?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Workspace {
+  workspace_id Int @id @default(autoincrement())
+  workspace_name String @default("empty")
+  ownerId Int @unique
+  owner User @relation(fields: [ownerId], references: [user_id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  folders Folder[]
+}
+
+model Folder {
+  folder_id Int @id @default(autoincrement())
+  folder_name String @unique
+  workspace Workspace @relation(fields: [workspaceId], references: [workspace_id])
+  workspaceId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files File[]
+}
+
+model File {
+  file_id Int @id @default(autoincrement())
+  file_name String
+  file_content String
+  folder Folder @relation(fields: [folderId], references: [folder_id])
+  folderId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  images Image[]
+}
+
+model Image{
+  image_id Int @id @default(autoincrement())
+  image_name String @unique
+  image_path String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  file File @relation(fields: [fileId], references: [file_id])
+  fileId Int
+}
